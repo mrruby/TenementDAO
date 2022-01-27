@@ -1,17 +1,22 @@
-import sdk from "./1-initialize-sdk.js";
 import { readFileSync } from "fs";
+import sdk from "./1-initialize-sdk.js";
 
-const bundleDrop = sdk.getBundleDropModule(
-  "0xF0446A8B1418f10D386f021A428013666270b4f7"
-);
+if (
+  !process.env.BUNDLE_DROP_ADDRESS ||
+  process.env.BUNDLE_DROP_ADDRESS === ""
+) {
+  console.log("🛑 App Address not found.");
+}
+
+const bundleDrop = sdk.getBundleDropModule(process.env.BUNDLE_DROP_ADDRESS);
 
 (async () => {
   try {
     await bundleDrop.createBatch([
       {
-        name: "GetBold",
-        description: "This NFT will give you access to TenementDAO!",
-        image: readFileSync("scripts/assets/nft.png"),
+        name: "Brick",
+        description: "Own brick to earm yield from our Tenement",
+        image: readFileSync("scripts/assets/brick.png"),
       },
     ]);
     console.log("✅ Successfully created a new NFT in the drop!");

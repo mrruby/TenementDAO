@@ -1,20 +1,35 @@
 import sdk from "./1-initialize-sdk.js";
 
-const bundleDrop = sdk.getBundleDropModule(
-  "0xF0446A8B1418f10D386f021A428013666270b4f7"
-);
+if (
+  !process.env.BUNDLE_DROP_ADDRESS ||
+  process.env.BUNDLE_DROP_ADDRESS === ""
+) {
+  console.log("🛑 App Address not found.");
+}
+
+if (!process.env.WALLET_ADDRESS || process.env.WALLET_ADDRESS === "") {
+  console.log("🛑 Wallet Address not found.");
+}
+
+const bundleDrop = sdk.getBundleDropModule(process.env.BUNDLE_DROP_ADDRESS);
 
 (async () => {
   try {
     const claimConditionFactory = bundleDrop.getClaimConditionFactory();
     // Specify conditions.
-    claimConditionFactory.newClaimPhase({
-      startTime: new Date(),
-      maxQuantity: 50_000,
-      maxQuantityPerTransaction: 1,
-    });
+    claimConditionFactory
+      .newClaimPhase({
+        startTime: new Date(),
+        maxQuantity: 2000,
+        maxQuantityPerTransaction: 1,
+      })
+      .setPrice(250000000000000000n); // price in wei
 
-    await bundleDrop.setClaimCondition(1, claimConditionFactory);
+    await bundleDrop.setClaimCondition(0, claimConditionFactory);
+    await bundleDrop.setSaleRecipient(0, process.env.WALLET_ADDRESS);
+
+    await bundleDrop.setRoyaltyBps(1000);
+
     console.log(
       "✅ Successfully set claim condition on bundle drop:",
       bundleDrop.address

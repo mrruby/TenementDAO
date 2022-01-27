@@ -1,10 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import App from "./App";
-
-// Import ThirdWeb
 import { ThirdwebWeb3Provider } from "@3rdweb/hooks";
+
+import App from "./App";
 
 // Include what chains you wanna support.
 // 4 = Rinkeby.

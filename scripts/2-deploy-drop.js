@@ -1,8 +1,13 @@
 import { ethers } from "ethers";
-import sdk from "./1-initialize-sdk.js";
 import { readFileSync } from "fs";
+import sdk from "./1-initialize-sdk.js";
+import { setEnv } from "./helpers.js";
 
-const app = sdk.getAppModule("0x47cf88344Eaf59d926378EFC8b46974EB4fA608c");
+if (!process.env.APP_ADDRESS || process.env.APP_ADDRESS === "") {
+  console.log("🛑 App Address not found.");
+}
+
+const app = sdk.getAppModule(process.env.APP_ADDRESS);
 
 (async () => {
   try {
@@ -10,7 +15,7 @@ const app = sdk.getAppModule("0x47cf88344Eaf59d926378EFC8b46974EB4fA608c");
       // The collection's name, ex. CryptoPunks
       name: "TenementDAO Membership",
       // A description for the collection.
-      description: "A DAO for our Tenement.",
+      description: "Own bricks and earm yield from our Tenement",
       // The image for the collection that will show up on OpenSea.
       image: readFileSync("scripts/assets/logo.png"),
       // We need to pass in the address of the person who will be receiving the proceeds from sales of nfts in the module.
@@ -23,6 +28,7 @@ const app = sdk.getAppModule("0x47cf88344Eaf59d926378EFC8b46974EB4fA608c");
       "✅ Successfully deployed bundleDrop module, address:", //
       bundleDropModule.address
     );
+    setEnv("BUNDLE_DROP_ADDRESS", bundleDropModule.address);
     console.log(
       "✅ bundleDrop metadata:",
       await bundleDropModule.getMetadata()
