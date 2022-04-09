@@ -8,11 +8,11 @@ if (
   console.log("🛑 App Address not found.");
 }
 
-const bundleDrop = sdk.getBundleDropModule(process.env.BUNDLE_DROP_ADDRESS);
+const editionDrop = sdk.getEditionDrop(process.env.BUNDLE_DROP_ADDRESS);
 
 (async () => {
   try {
-    await bundleDrop.createBatch([
+    await editionDrop.createBatch([
       {
         name: "Brick",
         description: "Own brick to earm yield from our Tenement",

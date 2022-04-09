@@ -1,41 +1,52 @@
 import { ethers } from "ethers";
 import sdk from "./1-initialize-sdk.js";
 
-// Our voting contract.
-const voteModule = sdk.getVoteModule(
-  "0x66701152334878cdc83cf5D4AA6Ba3286c3aA84f"
-);
+if (!process.env.TOKEN_ADDRESS || process.env.TOKEN_ADDRESS === "") {
+  console.log("🛑 TOKEN ADDRESS not found.");
+}
 
-// Our ERC-20 contract.
-const tokenModule = sdk.getTokenModule(
-  "0xdAd4C5Da5d45A34700AC65Ef776ADe0Fb42Be41C"
-);
+// This is our ERC-20 contract.
+const token = sdk.getToken(process.env.TOKEN_ADDRESS);
+
+if (
+  !process.env.VOTE_CONTRACT_ADDRESS ||
+  process.env.VOTE_CONTRACT_ADDRESS === ""
+) {
+  console.log("🛑 VOTE CONTRACT ADDRESS not found.");
+}
+
+// This is our governance contract.
+const vote = sdk.getVote(process.env.VOTE_CONTRACT_ADDRESS);
+
+if (!process.env.WALLET_ADDRESS || process.env.WALLET_ADDRESS === "") {
+  console.log("🛑 Wallet Address not found.");
+}
 
 (async () => {
   try {
-    const amount = 420_000;
-    // Create proposal to mint 420,000 new token to the treasury.
-    await voteModule.propose(
-      "Should the DAO mint an additional " +
-        amount +
-        " tokens into the treasury?",
-      [
-        {
-          // Our nativeToken is ETH. nativeTokenValue is the amount of ETH we want
-          // to send in this proposal. In this case, we're sending 0 ETH.
-          // We're just minting new tokens to the treasury. So, set to 0.
-          nativeTokenValue: 0,
-          transactionData: tokenModule.contract.interface.encodeFunctionData(
-            // We're doing a mint! And, we're minting to the voteModule, which is
-            // acting as our treasury.
-            "mint",
-            [voteModule.address, ethers.utils.parseUnits(amount.toString(), 18)]
-          ),
-          // Our token module that actually executes the mint.
-          toAddress: tokenModule.address,
-        },
-      ]
-    );
+    // Create proposal to mint 42000 new token to the treasury.
+    const amount = 42_000;
+    const description = `Should the DAO mint an additional ${amount} tokens into the treasury for refurbishment reward?`;
+    const executions = [
+      {
+        // Our token contract that actually executes the mint.
+        toAddress: token.getAddress(),
+        // Our nativeToken is ETH. nativeTokenValue is the amount of ETH we want
+        // to send in this proposal. In this case, we're sending 0 ETH.
+        // We're just minting new tokens to the treasury. So, set to 0.
+        nativeTokenValue: 0,
+        // We're doing a mint! And, we're minting to the vote, which is
+        // acting as our treasury.
+        // in this case, we need to use ethers.js to convert the amount
+        // to the correct format. This is because the amount it requires is in wei.
+        transactionData: token.encoder.encode("mintTo", [
+          vote.getAddress(),
+          ethers.utils.parseUnits(amount.toString(), 18),
+        ]),
+      },
+    ];
+
+    await vote.propose(description, executions);
 
     console.log("✅ Successfully created proposal to mint tokens");
   } catch (error) {
@@ -44,35 +55,22 @@ const tokenModule = sdk.getTokenModule(
   }
 
   try {
-    const amount = 6_900;
-    // Create proposal to transfer ourselves 6,900 tokens for being awesome.
-    await voteModule.propose(
-      "Should the DAO transfer " +
-        amount +
-        " tokens from the treasury to " +
-        process.env.WALLET_ADDRESS +
-        " for being awesome?",
-      [
-        {
-          // Again, we're sending ourselves 0 ETH. Just sending our own token.
-          nativeTokenValue: 0,
-          transactionData: tokenModule.contract.interface.encodeFunctionData(
-            // We're doing a transfer from the treasury to our wallet.
-            "transfer",
-            [
-              process.env.WALLET_ADDRESS,
-              ethers.utils.parseUnits(amount.toString(), 18),
-            ]
-          ),
+    const amount = 5000;
+    const description = `Should the DAO transfer ${amount} tokens from the treasury to management for a great work?`;
+    const executions = [
+      {
+        nativeTokenValue: 0,
+        transactionData: token.encoder.encode("transfer", [
+          process.env.WALLET_ADDRESS,
+          ethers.utils.parseUnits(amount.toString(), 18),
+        ]),
+        toAddress: token.getAddress(),
+      },
+    ];
 
-          toAddress: tokenModule.address,
-        },
-      ]
-    );
+    await vote.propose(description, executions);
 
-    console.log(
-      "✅ Successfully created proposal to reward ourselves from the treasury, let's hope people vote for it!"
-    );
+    console.log("✅ Successfully created proposal to reward management!");
   } catch (error) {
     console.error("failed to create second proposal", error);
   }

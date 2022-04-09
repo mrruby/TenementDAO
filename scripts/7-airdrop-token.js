@@ -1,21 +1,25 @@
-import { ethers } from "ethers";
 import sdk from "./1-initialize-sdk.js";
 
-// This is the address to our ERC-1155 membership NFT contract.
-const bundleDropModule = sdk.getBundleDropModule(
-  "0xF0446A8B1418f10D386f021A428013666270b4f7"
-);
+if (!process.env.TOKEN_ADDRESS || process.env.TOKEN_ADDRESS === "") {
+  console.log("🛑 TOKEN ADDRESS not found.");
+}
 
-// This is the address to our ERC-20 token contract.
-const tokenModule = sdk.getTokenModule(
-  "0xdAd4C5Da5d45A34700AC65Ef776ADe0Fb42Be41C"
-);
+if (
+  !process.env.BUNDLE_DROP_ADDRESS ||
+  process.env.BUNDLE_DROP_ADDRESS === ""
+) {
+  console.log("🛑 App Address not found.");
+}
+
+const editionDrop = sdk.getEditionDrop(process.env.BUNDLE_DROP_ADDRESS);
+
+const token = sdk.getToken(process.env.TOKEN_ADDRESS);
 
 (async () => {
   try {
-    // Grab all the addresses of people who own our membership NFT, which has
-    // a tokenId of 0.
-    const walletAddresses = await bundleDropModule.getAllClaimerAddresses("1");
+    // Grab all the addresses of people who own our membership NFT,
+    // which has a tokenId of 0.
+    const walletAddresses = await editionDrop.history.getAllClaimerAddresses(0);
 
     if (walletAddresses.length === 0) {
       console.log(
@@ -27,16 +31,12 @@ const tokenModule = sdk.getTokenModule(
     // Loop through the array of addresses.
     const airdropTargets = walletAddresses.map((address) => {
       // Pick a random # between 1000 and 10000.
-      const randomAmount = Math.floor(
-        Math.random() * (10000 - 1000 + 1) + 1000
-      );
-      console.log("✅ Going to airdrop", randomAmount, "tokens to", address);
+      const amount = 1000;
 
       // Set up the target.
       const airdropTarget = {
-        address,
-        // Remember, we need 18 decimal placees!
-        amount: ethers.utils.parseUnits(randomAmount.toString(), 18),
+        toAddress: address,
+        amount,
       };
 
       return airdropTarget;
@@ -44,7 +44,7 @@ const tokenModule = sdk.getTokenModule(
 
     // Call transferBatch on all our airdrop targets.
     console.log("🌈 Starting airdrop...");
-    await tokenModule.transferBatch(airdropTargets);
+    await token.transferBatch(airdropTargets);
     console.log(
       "✅ Successfully airdropped tokens to all the holders of the NFT!"
     );

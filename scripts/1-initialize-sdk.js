@@ -1,8 +1,6 @@
-import { ThirdwebSDK } from "@3rdweb/sdk";
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import ethers from "ethers";
 import dotenv from "dotenv";
-
-import { setEnv } from "./helpers.js";
 
 dotenv.config();
 
@@ -30,12 +28,8 @@ const sdk = new ThirdwebSDK(
 
 (async () => {
   try {
-    const apps = await sdk.getApps();
-    const app = apps.find(
-      (element) => element.metadata.name === "TenementDAO NFT"
-    );
-    console.log("Your app address is:", app.address);
-    setEnv("APP_ADDRESS", app.address);
+    const apps = await sdk.getSigner().getAddress();
+    console.log("Your app address is:", apps.address);
   } catch (err) {
     console.error("Failed to get apps from the sdk", err);
     process.exit(1);

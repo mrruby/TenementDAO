@@ -1,20 +1,24 @@
+import { AddressZero } from "@ethersproject/constants";
+import { setEnv } from "./helpers.js";
 import sdk from "./1-initialize-sdk.js";
-
-// In order to deploy the new contract we need our old friend the app module again.
-const app = sdk.getAppModule("0x47cf88344Eaf59d926378EFC8b46974EB4fA608c");
 
 (async () => {
   try {
     // Deploy a standard ERC-20 contract.
-    const tokenModule = await app.deployTokenModule({
+    const tokenAddress = await sdk.deployer.deployToken({
       // What's your token's name? Ex. "Ethereum"
       name: "TenementDAO Governance Token",
       // What's your token's symbol? Ex. "ETH"
       symbol: "TEN",
+      // This will be in case we want to sell our token,
+      // because we don't, we set it to AddressZero again.
+      primary_sale_recipient: AddressZero,
     });
+    setEnv("TOKEN_ADDRESS", tokenAddress);
+    setEnv("REACT_APP_TOKEN_ADDRESS", tokenAddress);
     console.log(
       "✅ Successfully deployed token module, address:",
-      tokenModule.address
+      tokenAddress
     );
   } catch (error) {
     console.error("failed to deploy token module", error);

@@ -1,26 +1,24 @@
-import { ethers } from "ethers";
-import sdk from "./1-initialize-sdk";
+import sdk from "./1-initialize-sdk.js";
+
+if (!process.env.TOKEN_ADDRESS || process.env.TOKEN_ADDRESS === "") {
+  console.log("🛑 TOKEN ADDRESS not found.");
+}
 
 // This is the address of our ERC-20 contract printed out in the step before.
-const tokenModule = sdk.getTokenModule(
-  "0xdAd4C5Da5d45A34700AC65Ef776ADe0Fb42Be41C"
-);
+const token = sdk.getToken(process.env.TOKEN_ADDRESS);
 
 (async () => {
   try {
     // What's the max supply you want to set? 1,000,000 is a nice number!
-    const amount = 1_000_000;
-    // We use the util function from "ethers" to convert the amount
-    // to have 18 decimals (which is the standard for ERC20 tokens).
-    const amountWith18Decimals = ethers.utils.parseUnits(amount.toString(), 18);
+    const amount = 1000000;
     // Interact with your deployed ERC-20 contract and mint the tokens!
-    await tokenModule.mint(amountWith18Decimals);
-    const totalSupply = await tokenModule.totalSupply();
+    await token.mint(amount);
+    const totalSupply = await token.totalSupply();
 
     // Print out how many of our token's are out there now!
     console.log(
       "✅ There now is",
-      ethers.utils.formatUnits(totalSupply, 18),
+      totalSupply.displayValue,
       "$TEN in circulation"
     );
   } catch (error) {

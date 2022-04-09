@@ -1,29 +1,21 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import { ThirdwebWeb3Provider } from "@3rdweb/hooks";
+import { ChainId, ThirdwebProvider } from "@thirdweb-dev/react";
+import { Buffer } from "buffer";
 
 import App from "./App";
 
-// Include what chains you wanna support.
-// 4 = Rinkeby.
-const supportedChainIds = [4];
+window.Buffer = Buffer;
 
-// Include what type of wallet you want to support.
-// In this case, we support Metamask which is an "injected wallet".
-const connectors = {
-  injected: {},
-};
+const activeChainId = ChainId.Rinkeby;
 
 // Finally, wrap App with ThirdwebWeb3Provider.
 ReactDOM.render(
   <React.StrictMode>
-    <ThirdwebWeb3Provider
-      connectors={connectors}
-      supportedChainIds={supportedChainIds}
-    >
+    <ThirdwebProvider desiredChainId={activeChainId}>
       <App />
-    </ThirdwebWeb3Provider>
+    </ThirdwebProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );
